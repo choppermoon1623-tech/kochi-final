@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 高知ファイナル 3連単ジェネレーター</title>
+<style>
+  :root{
+    --bg:#0d0a16; --bg2:#17112a; --panel:#1b1536; --panel2:#221a45;
+    --gold:#e7c66b; --gold2:#f3dd9a; --txt:#ece8ff; --sub:#a89fd6;
+    --line:#3a3168; --good:#5fd6a0; --warn:#f0a35e; --bad:#e06b8b;
+    --fire:#ff7a3c; --fire2:#ffb347;
+    --kin:#7fd0ff; --mkt:#ffd54a; --occ:#ff9ad5;
+    --honmei:#ffd54a; --taikou:#7fd0ff; --tanana:#ff9ad5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
+    background:radial-gradient(1200px 700px at 50% -200px,#3a1f2a,var(--bg)) fixed;
+    color:var(--txt); line-height:1.6; padding:0 0 80px;
+  }
+  header{
+    text-align:center; padding:26px 16px 16px;
+    background:linear-gradient(180deg,rgba(82,40,40,.55),transparent);
+    border-bottom:1px solid var(--line);
+  }
+  header h1{margin:0; font-size:28px; letter-spacing:.06em;
+    background:linear-gradient(90deg,var(--fire),var(--fire2),var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 26px rgba(255,122,60,.25);}
+  header .sub{color:var(--sub); font-size:13px; margin-top:6px;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 14px;}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line); border-radius:16px; padding:18px; margin-top:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,.35);}
+  .card h2{margin:0 0 12px; font-size:16px; color:var(--gold2);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+  textarea{width:100%; min-height:120px; resize:vertical; background:#120e26;
+    color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:12px;
+    font-family:"Consolas",monospace; font-size:13px;}
+  button{cursor:pointer; border:none; border-radius:10px; padding:10px 16px;
+    font-size:14px; font-weight:600; transition:.15s; color:#1a142e;
+    background:linear-gradient(180deg,var(--fire2),var(--fire)); }
+  button:hover{filter:brightness(1.08); transform:translateY(-1px);}
+  button.ghost{background:transparent; color:var(--gold2); border:1px solid var(--gold);}
+  button.ghost:hover{background:rgba(231,198,107,.12);}
+  button.sm{padding:7px 12px; font-size:13px;}
+  .hint{color:var(--sub); font-size:12px;}
+  label.fld{font-size:12px; color:var(--sub);}
+  input[type=date],input[type=text]{background:#120e26; color:var(--txt);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px;}
+
+  /* 3軸スライダー */
+  .axes{display:flex; flex-direction:column; gap:10px; margin-top:4px;}
+  .axrow{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .axrow .nm{min-width:160px; font-weight:700; font-size:14px;}
+  .axrow .nm.kin{color:var(--kin);} .axrow .nm.mkt{color:var(--mkt);} .axrow .nm.occ{color:var(--occ);}
+  .axrow input[type=range]{flex:1; min-width:200px;}
+  .axrow.kin input[type=range]{accent-color:var(--kin);}
+  .axrow.mkt input[type=range]{accent-color:var(--mkt);}
+  .axrow.occ input[type=range]{accent-color:var(--occ);}
+  .axrow .pct{min-width:74px; text-align:right; font-variant-numeric:tabular-nums; font-weight:700; font-size:14px;}
+  .preset{font-size:12px; color:var(--sub);}
+
+  /* 点数 */
+  .ptchip{display:inline-block; padding:5px 13px; margin:2px; border-radius:20px;
+    border:1px solid var(--line); cursor:pointer; font-size:13px; color:var(--gold2);
+    background:#1b1542; transition:.12s;}
+  .ptchip:hover{filter:brightness(1.15);}
+  .ptchip.on{background:linear-gradient(180deg,var(--fire2),var(--fire));
+    color:#1a142e; border-color:var(--fire); font-weight:800;}
+  input[type=number]{background:#120e26; color:var(--txt); border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; font-size:14px;}
+
+  /* table */
+  table{width:100%; border-collapse:collapse; margin-top:6px;}
+  th,td{padding:9px 7px; text-align:center; border-bottom:1px solid var(--line); font-size:14px;}
+  th{color:var(--sub); font-weight:600; font-size:12px;}
+  tr.horse{cursor:pointer;}
+  tr.horse:hover{background:rgba(231,198,107,.06);}
+  .mark{font-weight:800; font-size:18px;}
+  .m-honmei{color:var(--honmei);} .m-taikou{color:var(--taikou);}
+  .m-tanana{color:#ffb56b;} .m-renka{color:#bda9ff;} .m-ana{color:var(--tanana);}
+  .uma{display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:6px; font-weight:800; color:#000; font-size:14px;}
+  .nm{text-align:left; font-weight:700; white-space:nowrap;}
+  #resultTable{min-width:680px;}
+  .bar{height:10px; border-radius:6px; background:#120e26; overflow:hidden; min-width:80px;}
+  .bar>i{display:block; height:100%; background:linear-gradient(90deg,var(--fire),var(--fire2));}
+  .scoretxt{font-variant-numeric:tabular-nums; font-weight:700;}
+  .small{font-size:12px; color:var(--sub);}
+  .detail{background:#140f2c;}
+  .detail td{text-align:left; padding:14px 16px;}
+  .fgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px;}
+  .fbox{background:#1b1540; border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
+  .fbox .t{font-size:11px; color:var(--gold2); letter-spacing:.05em; margin-bottom:4px;}
+  .fbox .v{font-size:14px;}
+  .chip{display:inline-block; padding:1px 8px; border-radius:20px; font-size:11px;
+    border:1px solid var(--line); margin-left:4px;}
+  .swatch{display:inline-block; width:12px; height:12px; border-radius:3px;
+    vertical-align:-1px; margin-right:4px; border:1px solid rgba(255,255,255,.3);}
+  .edge{font-weight:800; font-variant-numeric:tabular-nums;}
+  .edge.plus{color:var(--good);} .edge.minus{color:var(--sub);}
+
+  /* 3連単 */
+  .arena{font-size:11px; padding:2px 10px; border-radius:20px; border:1px solid var(--fire);
+    color:var(--fire2); margin-left:4px; vertical-align:2px;}
+  .pay77{font-size:11px; padding:2px 10px; border-radius:20px; border:1px solid var(--good);
+    color:var(--good); margin-left:4px; vertical-align:2px;}
+  .trif{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:14px; margin-top:6px;}
+  .trif .tc{background:#1b1540; border:1px solid var(--line); border-radius:12px; padding:16px;}
+  .trif .tc.ai{border-color:var(--gold); box-shadow:inset 0 0 0 1px rgba(231,198,107,.18);}
+  .trif .tc.formation{border-color:var(--taikou); box-shadow:inset 0 0 0 1px rgba(127,208,255,.15);}
+  .trif .tc.box{border-color:var(--tanana); box-shadow:inset 0 0 0 1px rgba(255,154,213,.15);}
+  .trif .tc .ttl{font-weight:800; font-size:14px; margin-bottom:10px;}
+  .trif .tc.ai .ttl{color:var(--gold2);}
+  .trif .tc.formation .ttl{color:var(--taikou);} .trif .tc.box .ttl{color:var(--tanana);}
+  .trif .pts{font-size:20px; font-weight:800; color:var(--gold2); margin:10px 0 4px;}
+  .trif .ds{font-size:12px; color:var(--sub); line-height:1.6;}
+  .colrow{display:flex; gap:6px; align-items:center; margin:4px 0; flex-wrap:wrap;}
+  .colrow .lb{min-width:40px; color:var(--sub); font-size:12px; font-weight:700;}
+  .umn{display:inline-flex; align-items:center; justify-content:center; width:25px; height:25px;
+    border-radius:6px; font-weight:800; color:#000; font-size:13px;}
+  .combo{display:flex; align-items:center; gap:6px; padding:5px 4px; border-bottom:1px solid var(--line);
+    font-size:13px;}
+  .combo .rk{min-width:20px; color:var(--sub); font-size:11px;}
+  .combo .arw{color:var(--sub); font-weight:700;}
+  .combo .pp{margin-left:auto; font-variant-numeric:tabular-nums; color:var(--good); font-weight:700; font-size:12px;}
+  .combo .pay{font-variant-numeric:tabular-nums; color:var(--sub); font-size:11px; min-width:70px; text-align:right;}
+  .combolist{max-height:380px; overflow:auto; padding-right:4px;}
+  .combolist .combo:last-child{border-bottom:none;}
+
+  /* 🎲 運試しモード */
+  #luckCard{border-color:#5a3a7a; box-shadow:0 10px 40px rgba(120,60,160,.25);}
+  .luckbtn{font-size:16px; padding:13px 26px;
+    background:linear-gradient(180deg,#c89bff,#8b5cf6); color:#fff;}
+  .luckbox{display:flex; flex-direction:column; gap:8px; margin-top:16px; align-items:center; min-height:44px;}
+  .luckrow{display:flex; align-items:center; gap:9px; font-size:18px;}
+  .luckrow .umn{width:36px; height:36px; font-size:17px; box-shadow:0 3px 10px rgba(0,0,0,.4);}
+  .luckrow .arw{color:var(--sub); font-weight:700;}
+  .luckrow .rk{color:var(--sub); font-size:12px; min-width:18px; text-align:right;}
+  .luckrow.rolling{opacity:.5; filter:blur(.4px);}
+  @keyframes luckpop{0%{transform:scale(.6);opacity:0;}60%{transform:scale(1.12);}100%{transform:scale(1);opacity:1;}}
+  .luckrow.settled .umn{animation:luckpop .4s ease both;}
+  .luckfortune{text-align:center; margin-top:16px; color:var(--gold2); font-size:13px;}
+
+  /* ===== スマホ最適化 ===== */
+  @media (max-width:640px){
+    header{padding:18px 12px 12px;}
+    header h1{font-size:21px;}
+    header .sub{font-size:12px;}
+    .wrap{padding:0 8px;}
+    .card{padding:13px; border-radius:13px; margin-top:13px;}
+    .card h2{font-size:15px;}
+    .axrow .nm{min-width:118px; font-size:13px;}
+    .axrow input[type=range]{min-width:130px;}
+    .axrow .pct{min-width:50px;}
+    .ptchip{padding:8px 15px; font-size:14px;}     /* 指で押しやすく */
+    button.sm{padding:9px 13px;}
+    .trif{grid-template-columns:1fr;}              /* 3案を縦積み */
+    /* ③ランキング表 → 1頭1カードに変形 */
+    #resultTable{min-width:0;}
+    #resultTable thead{display:none;}
+    #resultTable, #resultTable tbody{display:block; width:100%;}
+    #resultTable tr.horse{display:block; border:1px solid var(--line);
+      border-radius:12px; margin:11px 0; padding:7px 13px 11px; background:#1b1540;}
+    #resultTable tr.horse:hover{background:#1b1540;}
+    #resultTable tr.horse td{display:flex; justify-content:space-between; align-items:center;
+      gap:12px; border:none; text-align:right; padding:5px 0;}
+    #resultTable tr.horse td::before{content:attr(data-l); color:var(--sub);
+      font-size:11px; font-weight:700; text-align:left; white-space:nowrap; flex:0 0 auto;}
+    #resultTable tr.horse td.nm{font-size:16px; padding-top:2px;}
+    #resultTable tr.horse td.nm .small{font-size:12px;}
+    #resultTable tr.horse td:last-child{align-items:flex-start; text-align:right;}
+    #resultTable tr.detail{display:block;}
+    #resultTable tr.detail td{display:block; width:100%; padding:11px 4px;}
+    .fgrid{grid-template-columns:1fr;}
+  }
+
+  .hidden{display:none;}
+  .foot{text-align:center; color:var(--sub); font-size:12px; margin-top:26px;}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    background:var(--fire); color:#1a142e; padding:10px 18px; border-radius:10px;
+    font-weight:700; box-shadow:0 8px 24px rgba(0,0,0,.4); opacity:0; pointer-events:none;
+    transition:.3s;}
+  .toast.show{opacity:1;}
+  .tarot .up{color:var(--good);} .tarot .rev{color:var(--bad);}
+  .err{color:var(--bad); font-size:13px; margin-top:8px; white-space:pre-wrap;}
+  details.prompt summary{cursor:pointer; color:var(--gold2); font-size:13px;}
+  pre.code{background:#0c0920; border:1px solid var(--line); border-radius:10px;
+    padding:12px; font-size:12px; overflow:auto; max-height:280px; color:#cdd6ff;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔥 高知ファイナル 3連単ジェネレーター 🐎</h1>
+  <div class="sub">一発逆転ファイナルレース専用 ｜ AI確率（Plackett-Luce）× 風水・タロットで3連単を生成</div>
+</header>
+
+<div class="wrap">
+
+  <!-- ① 入力 -->
+  <div class="card">
+    <h2>① 出馬表データ入力（BATでJSON抽出 → 貼り付け）</h2>
+    <details class="prompt">
+      <summary>📋 スクショからAIにJSON化させるプロンプトを開く</summary>
+      <p class="hint" style="margin:8px 0;">BATが使えない時の保険。出馬表スクショと一緒にAIへ渡すとJSONが返ります。</p>
+      <pre class="code" id="aiPrompt"></pre>
+      <button class="ghost sm" onclick="copyPrompt()">プロンプトをコピー</button>
+    </details>
+    <p class="hint" style="margin:0 0 8px;">📱 <b>スマホ：</b>出馬表をスクショ → AIアプリに「スクショ＋下のプロンプト」→ 返ったJSONを貼付（前後に説明文が付いてもOK）。馬場は出馬表の表記（例：不良）に合わせて②で選択。</p>
+    <textarea id="jsonInput" placeholder="ここに出馬表JSONを貼り付け…（スマホ＝スクショ→AI／PC＝出馬表をJSON化.bat の出力）"></textarea>
+    <div class="row" style="margin-top:10px;">
+      <button onclick="loadData()">🔥 買い目を生成</button>
+      <button class="ghost" onclick="copyPrompt()">📋 AI用プロンプトをコピー</button>
+      <button class="ghost" onclick="loadSample()">サンプル（高知ファイナル想定）</button>
+      <button class="ghost" onclick="clearAll()">クリア</button>
+    </div>
+    <div class="err" id="errBox"></div>
+  </div>
+
+  <!-- ② 設定 -->
+  <div class="card" id="cfgCard">
+    <h2>② 配合を調整（3軸）＆ 点数指定</h2>
+    <div class="axes">
+      <div class="axrow kin">
+        <span class="nm kin">🧠 ガチ実力（近走＋高知補正）</span>
+        <input type="range" id="sKin" min="0" max="100" value="25" oninput="onAxes()">
+        <span class="pct" id="pKin">25%</span>
+      </div>
+      <div class="axrow mkt">
+        <span class="nm mkt">💹 市場（オッズ・人気）</span>
+        <input type="range" id="sMkt" min="0" max="100" value="40" oninput="onAxes()">
+        <span class="pct" id="pMkt">40%</span>
+      </div>
+      <div class="axrow occ">
+        <span class="nm occ">🔮 オカルト（風水・タロット）</span>
+        <input type="range" id="sOcc" min="0" max="100" value="35" oninput="onAxes()">
+        <span class="pct" id="pOcc">35%</span>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px; justify-content:space-between;">
+      <span class="preset">推奨：ファイナルは能力差が圧縮 → 市場やや重め。プリセット：
+        <button class="ghost sm" onclick="setAxes(25,40,35)">バランス</button>
+        <button class="ghost sm" onclick="setAxes(40,45,15)">ガチ寄り</button>
+        <button class="ghost sm" onclick="setAxes(10,30,60)">オカルト寄り</button>
+      </span>
+      <label class="fld">開催日（占いの基準）：
+        <input type="date" id="raceDate" onchange="recompute()">
+      </label>
+    </div>
+    <div class="row" style="gap:8px; align-items:center; margin-top:12px;">
+      <span class="fld">3連単の点数：</span>
+      <span id="ptChips"></span>
+      <input type="number" id="trifPts" min="3" max="300" value="30" style="width:78px;" oninput="onPtsInput()">
+      <span class="fld">点</span>
+    </div>
+    <div class="row" style="gap:8px; align-items:center; margin-top:14px; border-top:1px solid var(--line); padding-top:13px;">
+      <span class="fld">☁ 天気：</span><span id="wxChips"></span>
+      <span class="fld" style="margin-left:10px;">🏇 馬場：</span><span id="trkChips"></span>
+      <button class="ghost sm" onclick="fetchWeather()" id="wxBtn" style="margin-left:6px;">☁ 高知の天気を自動取得</button>
+    </div>
+    <div class="hint" id="wxHint" style="margin-top:6px;">未指定なら従来どおり（馬場=良）。雨・道悪は荒れ指数↑＆オカルトに天候五行を加味します（馬場のガチ補正は推測ベース）。</div>
+  </div>
+
+  <!-- ③ ランキング -->
+  <div class="card hidden" id="resultCard">
+    <h2 id="raceTitle">③ 潜在強さランキング</h2>
+    <div style="overflow:auto;">
+      <table id="resultTable">
+        <thead><tr>
+          <th>印</th><th>馬番</th><th>馬名</th>
+          <th>1着確率<br>(AI)</th>
+          <th style="color:var(--kin)">実力</th>
+          <th style="color:var(--mkt)">市場</th>
+          <th style="color:var(--occ)">占い</th>
+          <th>妙味</th><th>ひとこと</th>
+        </tr></thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+    <p class="small" style="margin-top:8px;">「妙味」＝人気順位−AI順位。プラスほど“市場より高く評価＝過小評価の穴”。行クリックで占い詳細（五行・干支・星座・タロット）。</p>
+  </div>
+
+  <!-- ④ 3連単 -->
+  <div class="card hidden" id="trifCard">
+    <h2>④ 🔥 一発逆転 3連単
+      <span class="arena" id="arenaBadge"></span>
+      <span class="arena" id="condBadge" style="border-color:var(--kin);color:var(--kin);display:none;"></span>
+      <span class="pay77" id="pay77Badge">高知ファイナル 払戻率77%</span>
+    </h2>
+    <div id="trifBox"></div>
+    <p class="small" style="margin-top:12px;">⚠️ ファイナルは万馬券がほぼ確実な難解レース。「理論配当」はAI確率の逆数＝回収にこれ以上のオッズが必要、という目安。実際の三連単オッズと見比べて、上回るものを買うのがコツ。余裕資金で。</p>
+  </div>
+
+  <!-- ⑤ 運試し -->
+  <div class="card" id="luckCard">
+    <h2>⑤ 🎲 運試し ─ ランダム3連単（己の運で引き寄せる）</h2>
+    <p class="small" style="margin-top:-4px;">分析は一切なし。サイコロと同じ完全ランダム。「何も考えず買った1点が払戻37万」を信じる人のためのモード。クリックして、無心で引け。</p>
+    <div class="row" style="gap:14px; align-items:center; margin-top:6px;">
+      <label class="fld">頭数 <input type="number" id="luckHeads" min="3" max="18" value="12" style="width:70px;"></label>
+      <label class="fld">生成点数 <input type="number" id="luckCount" min="1" max="20" value="1" style="width:70px;"></label>
+      <button class="luckbtn" id="luckBtn" onclick="rollLuck()">🎲 運命を引き寄せる</button>
+      <button class="ghost sm" id="luckCopyBtn" onclick="copyLuck()" style="display:none;">買い目をコピー</button>
+    </div>
+    <div class="luckbox" id="luckResult"></div>
+    <div class="luckfortune" id="luckFortune"></div>
+  </div>
+
+  <div class="foot">高知ファイナル3連単ジェネレーター ｜ オフライン単一HTML ｜ Plackett-Luce × 五行・言霊・タロット・干支・星座 ＋ 運試し</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   高知ファイナル3連単ジェネレーター エンジン
+   占馬録のオカルトエンジンを流用＋3軸ブレンド＋Plackett-Luce
+   ============================================================ */
+
+/* ---- 決定論的乱数（seed=日付+馬番+馬名 で毎回同じ結果） ---- */
+function strHash(s){
+  let h=2166136261>>>0;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); }
+  return h>>>0;
+}
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function rngFor(seedStr){ return mulberry32(strHash(seedStr)); }
+function clamp(x){ return Math.max(0,Math.min(100,x)); }
+
+/* ---- JRA枠色・五行 ---- */
+const WAKU = {
+  1:{name:"白", css:"#f4f4f4", txt:"#000", gogyo:"金", dir:"西"},
+  2:{name:"黒", css:"#222",    txt:"#fff", gogyo:"水", dir:"北"},
+  3:{name:"赤", css:"#e23b3b", txt:"#fff", gogyo:"火", dir:"南"},
+  4:{name:"青", css:"#2f7be8", txt:"#fff", gogyo:"木", dir:"東"},
+  5:{name:"黄", css:"#f0c52a", txt:"#000", gogyo:"土", dir:"中央"},
+  6:{name:"緑", css:"#2faa57", txt:"#fff", gogyo:"木", dir:"東"},
+  7:{name:"橙", css:"#ee8a2a", txt:"#000", gogyo:"土", dir:"南西"},
+  8:{name:"桃", css:"#f08ab0", txt:"#000", gogyo:"火", dir:"南"}
+};
+function wakuFromNum(num, total){
+  total=total||num;
+  if(total<=8) return Math.min(num,8);
+  const base=Math.floor(total/8), rem=total%8;
+  let counts=[]; for(let w=1;w<=8;w++){ counts.push(base + (w> (8-rem)?1:0)); }
+  let acc=0;
+  for(let w=1;w<=8;w++){ acc+=counts[w-1]; if(num<=acc) return w; }
+  return 8;
+}
+
+/* ---- 五行 相性 ---- */
+const GOGYO=["木","火","土","金","水"];
+function gogyoIndex(g){ return GOGYO.indexOf(g); }
+function gogyoCompat(a,b){
+  if(a===b) return 78;
+  const ia=gogyoIndex(a), ib=gogyoIndex(b);
+  if((ia+1)%5===ib) return 100;
+  if((ib+1)%5===ia) return 88;
+  if((ia+2)%5===ib) return 38;
+  if((ib+2)%5===ia) return 30;
+  return 55;
+}
+
+/* ---- 干支（年・日） ---- */
+const JIKKAN=["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const JUNISHI=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const ZODIAC_NAME=["ねずみ","うし","とら","うさぎ","たつ","み","うま","ひつじ","さる","とり","いぬ","いのしし"];
+const KAN_GOGYO={甲:"木",乙:"木",丙:"火",丁:"火",戊:"土",己:"土",庚:"金",辛:"金",壬:"水",癸:"水"};
+const SHI_GOGYO={子:"水",丑:"土",寅:"木",卯:"木",辰:"土",巳:"火",午:"火",未:"土",申:"金",酉:"金",戌:"土",亥:"水"};
+function yearEto(year){
+  const s=((year-4)%12+12)%12, k=((year-4)%10+10)%10;
+  return {shi:JUNISHI[s], kan:JIKKAN[k], gogyo:SHI_GOGYO[JUNISHI[s]], name:ZODIAC_NAME[s]};
+}
+function birthYearFromSexAge(sexAge, raceYear){
+  if(!sexAge) return null;
+  const m=String(sexAge).match(/(\d+)/);
+  if(!m) return null;
+  return raceYear - parseInt(m[1],10);
+}
+function jdn(y,m,d){
+  const a=Math.floor((14-m)/12), yy=y+4800-a, mm=m+12*a-3;
+  return d+Math.floor((153*mm+2)/5)+365*yy+Math.floor(yy/4)-Math.floor(yy/100)+Math.floor(yy/400)-32045;
+}
+function dayEto(dateStr){
+  const [y,m,d]=dateStr.split("-").map(Number);
+  const j=jdn(y,m,d);
+  const k=((j+9)%10+10)%10;
+  const s=((j+1)%12+12)%12;
+  return {kan:JIKKAN[k], shi:JUNISHI[s],
+          gogyo:KAN_GOGYO[JIKKAN[k]], shiGogyo:SHI_GOGYO[JUNISHI[s]]};
+}
+
+/* ---- 12星座（馬番見立て） ---- */
+const SEIZA=[
+  {n:"牡羊座",e:"火",emo:"♈"},{n:"牡牛座",e:"土",emo:"♉"},{n:"双子座",e:"風",emo:"♊"},
+  {n:"蟹座",e:"水",emo:"♋"},{n:"獅子座",e:"火",emo:"♌"},{n:"乙女座",e:"土",emo:"♍"},
+  {n:"天秤座",e:"風",emo:"♎"},{n:"蠍座",e:"水",emo:"♏"},{n:"射手座",e:"火",emo:"♐"},
+  {n:"山羊座",e:"土",emo:"♑"},{n:"水瓶座",e:"風",emo:"♒"},{n:"魚座",e:"水",emo:"♓"}
+];
+function seizaFromNum(num){ return SEIZA[(num-1)%12]; }
+
+/* ---- カタカナ画数（簡易） ---- */
+const KAKU={ア:2,イ:2,ウ:3,エ:3,オ:3,カ:2,キ:3,ク:2,ケ:3,コ:2,サ:3,シ:3,ス:2,セ:2,ソ:2,
+タ:3,チ:2,ツ:3,テ:3,ト:2,ナ:2,ニ:2,ヌ:2,ネ:4,ノ:1,ハ:2,ヒ:2,フ:1,ヘ:1,ホ:4,
+マ:2,ミ:3,ム:2,メ:2,モ:3,ヤ:2,ユ:2,ヨ:3,ラ:2,リ:2,ル:2,レ:1,ロ:3,ワ:2,ヲ:3,ン:2,
+ガ:4,ギ:5,グ:4,ゲ:5,ゴ:4,ザ:5,ジ:5,ズ:4,ゼ:4,ゾ:4,ダ:5,ヂ:4,ヅ:5,デ:5,ド:4,
+バ:4,ビ:4,ブ:3,ベ:3,ボ:6,パ:3,ピ:3,プ:2,ペ:2,ポ:5,ヴ:5,ャ:2,ュ:2,ョ:3,ッ:3,ー:1};
+const LUCKY_KAKU=new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,39,41,45,47,48,52,57,58,61,63,65,67,68,81]);
+function nameKaku(name){
+  let t=0; for(const ch of (name||"")){ t+= (KAKU[ch]!==undefined?KAKU[ch]: (ch>="ァ"&&ch<="ヶ"?2: (/[一-龯]/.test(ch)?8:1))); }
+  return t;
+}
+function kakuFortune(name){
+  const t=nameKaku(name); const r=t%81===0?81:t%81;
+  let score, label;
+  if(LUCKY_KAKU.has(r)){ score=90; label="大吉数"; }
+  else if(r%2===1){ score=66; label="中吉数"; }
+  else { score=46; label="要注意数"; }
+  return {total:t, reduced:r, score, label};
+}
+
+/* ---- 言霊（頭文字の母音→五行） ---- */
+function kotodama(name, dayGogyo){
+  const head=(name||"　").charAt(0);
+  const v=headVowel(head);
+  const map={"あ":"木","い":"火","う":"土","え":"金","お":"水"};
+  const g=map[v]||"土";
+  const s=gogyoCompat(g, dayGogyo);
+  return {head, vowel:v, gogyo:g, score:s};
+}
+function headVowel(ch){
+  const a="アカサタナハマヤラワガザダバパ", i="イキシチニヒミリギジヂビピ",
+        u="ウクスツヌフムユルグズヅブプヴ", e="エケセテネヘメレゲゼデベペ",
+        o="オコソトノホモヨロヲゴゾドボポ";
+  if(a.includes(ch))return"あ"; if(i.includes(ch))return"い";
+  if(u.includes(ch))return"う"; if(e.includes(ch))return"え";
+  if(o.includes(ch))return"お"; return"あ";
+}
+
+/* ---- タロット（大アルカナ22枚） ---- */
+const TAROT=[
+ ["愚者",70],["魔術師",85],["女教皇",62],["女帝",80],["皇帝",78],["教皇",60],
+ ["恋人",82],["戦車",90],["力",84],["隠者",55],["運命の輪",92],["正義",66],
+ ["吊られた男",40],["死神",45],["節制",68],["悪魔",42],["塔",30],["星",88],
+ ["月",48],["太陽",95],["審判",75],["世界",98]];
+function drawTarot(seed){
+  const r=rngFor(seed+"|tarot");
+  const idx=Math.floor(r()*22);
+  const reversed=r()<0.4;
+  const [name,base]=TAROT[idx];
+  const score=reversed? Math.max(15,Math.round(base*0.5)) : base;
+  return {name, reversed, score};
+}
+
+/* ---- その日の運勢・ラッキーカラー ---- */
+const COLORS=[
+ {n:"白",css:"#f4f4f4"},{n:"黒",css:"#222"},{n:"赤",css:"#e23b3b"},{n:"青",css:"#2f7be8"},
+ {n:"黄",css:"#f0c52a"},{n:"緑",css:"#2faa57"},{n:"橙",css:"#ee8a2a"},{n:"桃",css:"#f08ab0"},
+ {n:"金",css:"#e7c66b"},{n:"紫",css:"#9b6be7"}];
+function dayFortune(dateStr){
+  const r=rngFor(dateStr+"|day");
+  const color=COLORS[Math.floor(r()*COLORS.length)];
+  const dirs=["東","西","南","北","南東","南西","北東","北西"];
+  const dir=dirs[Math.floor(r()*dirs.length)];
+  return {color, dir};
+}
+function seizaDaily(dateStr, seiza){
+  const r=rngFor(dateStr+"|"+seiza.n);
+  return Math.round(35+r()*60);
+}
+
+/* ============================================================
+   3軸スコア（①実力 ②市場 ③オカルト）
+   ============================================================ */
+/* 高知ファイナル特化データ（部分一致で判定） */
+const FINAL_JOCKEYS=["妹尾","多田羅","濱尚","塚本雄","上田将","井上瑛"]; // ファイナル巧者
+const OVERHEAT_JOCKEYS=["赤岡","宮川実"];                               // 過剰人気しやすい
+const FORM_COMPRESS=0.5; // 近走の効きを圧縮（全馬「近4走勝ちなし」が出走条件のため）
+
+/* ---- 天気・馬場（現地反映） ---- */
+// 天気→五行（晴=火/曇=土/雨=水）＋荒れ加点。馬場→枠バイアス（道悪は内ラチ前残り想定）＋荒れ加点。すべて推測ベース。
+const WEATHER_INFO={
+  "晴":{gogyo:"火", emoji:"☀️", arena:0},
+  "曇":{gogyo:"土", emoji:"☁️", arena:1},
+  "雨":{gogyo:"水", emoji:"🌧️", arena:5}
+};
+const TRACK_INFO={
+  "良":  {arena:0, bias:{1:-2, 8:-1}},  // 通常：最内は砂深でやや不利
+  "稍重":{arena:2, bias:{1:-1, 8:-1}},
+  "重":  {arena:5, bias:{1: 1, 8:-2}},  // 道悪：内ラチ沿い前残り＆外伸びにくい想定
+  "不良":{arena:8, bias:{1: 2, 8:-2}}
+};
+const WEATHER_OPTS=["晴","曇","雨"];
+const TRACK_OPTS=["良","稍重","重","不良"];
+let WEATHER="";      // ""=未指定（オカルト天候・荒天補正なし）
+let TRACK="良";      // 既定=良（従来挙動）
+
+/* ① ガチ実力＝近走（圧縮）＋高知ファイナル補正＋馬場バイアス */
+function fundamentalScore(h, track){
+  let s;
+  if(h.recent && h.recent.length){
+    let num=0,den=0;
+    h.recent.forEach((p,i)=>{ const w=Math.pow(0.7,i);
+      const ps=Math.max(0,100*(1-(Math.min(p,18)-1)/13)); num+=ps*w; den+=w; });
+    s=num/den;
+    s=50+(s-50)*FORM_COMPRESS;   // ファイナルは能力差圧縮
+  } else s=50;
+  const jk=h.jockey||"";
+  h._finalJockey=h._overheat=h._bigLoss=false; h._frame="";
+  if(FINAL_JOCKEYS.some(x=>jk.includes(x))){
+    const ls=h.odds? Math.min(1,(h.odds-1)/19):0.5;
+    s += 6 + 8*ls; h._finalJockey=true;
+  }
+  if(OVERHEAT_JOCKEYS.some(x=>jk.includes(x)) && h.odds && h.odds>=4){
+    s -= 10; h._overheat=true;
+  }
+  if(h.recent && h.recent.length && h.recent[0]>=9){ s += 3; h._bigLoss=true; }
+  // 高知：内ラチ沿いの砂が深く最内はやや不利。道悪（重・不良）では前残り想定で内有利へ反転（推測）。
+  const bias=(TRACK_INFO[track]||TRACK_INFO["良"]).bias;
+  h._wetInner=h._wetOuter=false;
+  if(h.waku===1){ s+=bias[1]; h._frame="内"; h._wetInner=(bias[1]>0); }
+  else if(h.waku===8){ s+=bias[8]; h._frame="外"; h._wetOuter=(bias[8]<=-2); }
+  return clamp(s);
+}
+
+/* ② 市場＝単勝オッズの implied prob ＋ 人気 */
+function marketScore(h, field){
+  let parts=[], wts=[];
+  if(h.odds && h.odds>0){
+    const implied=1/h.odds;
+    parts.push(100*Math.pow(implied/field.maxImplied,0.7)); wts.push(0.7);
+  }
+  if(h.pop && h.pop>0){
+    parts.push(100*(1-(h.pop-1)/Math.max(1,field.n-1))); wts.push(0.3);
+  }
+  if(!parts.length) return 50;
+  let s=0,w=0; parts.forEach((p,i)=>{ s+=p*wts[i]; w+=wts[i]; });
+  return s/w;
+}
+
+/* ③ オカルト */
+function occultDetail(h, ctx){
+  const seed=ctx.dateStr+"|"+h.num+"|"+h.name;
+  const waku=WAKU[h.waku];
+  const fengScore=gogyoCompat(waku.gogyo, ctx.dayGogyo);
+  const koto=kotodama(h.name, ctx.dayGogyo);
+  const kaku=kakuFortune(h.name);
+  let eto=null, etoScore=60;
+  if(h.birthYear){ eto=yearEto(h.birthYear); etoScore=gogyoCompat(eto.gogyo, ctx.dayShiGogyo); }
+  const seiza=seizaFromNum(h.num);
+  const seizaScore=seizaDaily(ctx.dateStr, seiza);
+  const tarot=drawTarot(seed);
+  const colorMatch = (waku.name===ctx.luckColor.n)?100:55;
+  let occult=
+     fengScore*0.22 + koto.score*0.13 + kaku.score*0.15 +
+     etoScore*0.15 + seizaScore*0.15 + tarot.score*0.15 + colorMatch*0.05;
+  // 天候五行（晴=火/曇=土/雨=水）と枠の五行の相性を加味（天気指定時のみ）
+  let tenkoScore=null;
+  if(ctx.weatherGogyo){
+    tenkoScore=gogyoCompat(waku.gogyo, ctx.weatherGogyo);
+    occult=occult*0.88 + tenkoScore*0.12;
+  }
+  return {occult, waku, fengScore, koto, kaku, eto, etoScore,
+          seiza, seizaScore, tarot, colorMatch, tenkoScore};
+}
+
+function finalTags(h){
+  let t="";
+  if(h._finalJockey) t+=`<span class="chip" style="border-color:var(--good);color:var(--good)">🏇巧者</span>`;
+  if(h._overheat)    t+=`<span class="chip" style="border-color:var(--bad);color:var(--bad)">過剰人気減</span>`;
+  if(h._bigLoss)     t+=`<span class="chip" style="border-color:var(--warn);color:var(--warn)">前走大敗の妙味</span>`;
+  if(h._wetInner)     t+=`<span class="chip" style="border-color:var(--good);color:var(--good)">💧道悪の内・前残り</span>`;
+  else if(h._frame==="内") t+=`<span class="chip" style="border-color:var(--sub);color:var(--sub)">最内砂被り</span>`;
+  if(h._wetOuter)     t+=`<span class="chip" style="border-color:var(--sub);color:var(--sub)">外枠不利(道悪)</span>`;
+  return t;
+}
+
+function oneLine(d){
+  const bits=[];
+  if(d.tarot.score>=85) bits.push(`「${d.tarot.name}」が${d.tarot.reversed?"逆位置だが":"順位置で"}強く出る`);
+  else if(d.tarot.reversed) bits.push(`「${d.tarot.name}（逆）」に暗雲`);
+  else bits.push(`「${d.tarot.name}」の導き`);
+  if(d.fengScore>=88) bits.push("枠の気が今日の流れに乗る");
+  else if(d.fengScore<=40) bits.push("枠の五行がやや逆風");
+  if(d.kaku.score>=90) bits.push("馬名は大吉数");
+  if(d.seizaScore>=85) bits.push(`${d.seiza.n}が絶好調`);
+  return bits.slice(0,2).join("／");
+}
+
+/* ============================================================
+   荒れ指数 & Plackett-Luce
+   ============================================================ */
+function arenaIndex(horses, condArena){
+  condArena=condArena||0;   // 雨・道悪による荒れ加点
+  const odds=horses.map(h=>h.odds).filter(o=>o&&o>0).sort((a,b)=>a-b);
+  if(odds.length<3) return {score:Math.min(99,72+condArena), label:"混戦模様"};
+  const fav=odds[0];
+  let s=Math.max(30,Math.min(90,(fav-1.5)/(6-1.5)*60+30));
+  const top=odds.slice(0,Math.min(5,odds.length));
+  const spread=(top[top.length-1]-top[0])/top[0];
+  s += Math.max(-10,Math.min(15,15-spread*10));
+  s += condArena;
+  s=Math.round(Math.max(30,Math.min(99,s)));
+  const label = s>=82?"大波乱必至 🌊":s>=66?"波乱含み":"やや堅め";
+  return {score:s, label};
+}
+/* 荒れ指数→PL温度：荒れるほど温度を上げ確率を平坦化（伏兵の出番増） */
+function tempFromArena(arena){
+  return 14 + (arena-30)/(99-30)*16;   // 14(堅)〜30(大荒れ)
+}
+
+/* Plackett-Luce：強さ str[] から (i,j,k) の3連単確率 */
+function plProb(i,j,k,str,S){
+  const s1=str[i], s2=str[j], s3=str[k];
+  return (s1/S) * (s2/(S-s1)) * (s3/(S-s1-s2));
+}
+
+/* ============================================================
+   状態 & メイン計算
+   ============================================================ */
+let RACE=null;
+let W_KIN=0.25, W_MKT=0.40, W_OCC=0.35;
+let TRIF_POINTS=30;
+const TRIF_PRESETS=[12,24,30,48,60,100];
+
+function buildContext(){
+  const dateStr=document.getElementById("raceDate").value || todayStr();
+  const de=dayEto(dateStr);
+  const luck=dayFortune(dateStr);
+  const wInfo=WEATHER?WEATHER_INFO[WEATHER]:null;
+  return {dateStr, dayGogyo:de.gogyo, dayShiGogyo:de.shiGogyo, dayEto:de, luckColor:luck.color, luckDir:luck.dir,
+          weather:WEATHER, weatherGogyo:wInfo?wInfo.gogyo:null, track:TRACK};
+}
+
+function recompute(){
+  if(!RACE) return;
+  const ctx=buildContext();
+  const horses=RACE.horses;
+  const n=horses.length;
+  const maxImplied=Math.max(...horses.map(h=> h.odds&&h.odds>0?1/h.odds:0.0001));
+  const field={n, maxImplied};
+  const wsum=W_KIN+W_MKT+W_OCC || 1;
+
+  horses.forEach(h=>{
+    h.fund=fundamentalScore(h, ctx.track);
+    h.mkt=marketScore(h, field);
+    h.det=occultDetail(h, ctx);
+    h.occ=h.det.occult;
+    h.combined=(h.fund*W_KIN + h.mkt*W_MKT + h.occ*W_OCC)/wsum;
+  });
+
+  // Plackett-Luce 強さ（荒れ指数で温度決定。雨・道悪で荒れ指数↑）
+  const condArena=(WEATHER?WEATHER_INFO[WEATHER].arena:0)+(TRACK_INFO[ctx.track]||TRACK_INFO["良"]).arena;
+  const arena=arenaIndex(horses, condArena);
+  const TEMP=tempFromArena(arena.score);
+  const maxC=Math.max(...horses.map(h=>h.combined));
+  horses.forEach(h=> h.str=Math.exp((h.combined-maxC)/TEMP));
+  const S=horses.reduce((a,h)=>a+h.str,0);
+  horses.forEach(h=> h.plWin=h.str/S);
+
+  // AI順位（強さ降順）と妙味（人気順位 − AI順位）
+  const byStr=[...horses].sort((a,b)=> b.str-a.str);
+  byStr.forEach((h,i)=> h.aiRank=i+1);
+  horses.forEach(h=> h.edge = (h.pop? h.pop : h.aiRank) - h.aiRank);
+
+  RACE._arena=arena; RACE._byStr=byStr;
+  render(ctx);
+}
+
+const MARKS=[
+  {s:"◎",c:"m-honmei",t:"本命"},{s:"○",c:"m-taikou",t:"対抗"},
+  {s:"▲",c:"m-tanana",t:"単穴"},{s:"△",c:"m-renka",t:"連下"},
+  {s:"△",c:"m-renka",t:"連下"}];
+
+function render(ctx){
+  const horses=RACE._byStr;             // AI強さ降順で表示
+  const r=RACE.race||{};
+  document.getElementById("raceTitle").textContent=
+    "③ "+(r.name?r.name:"潜在強さランキング")+
+    (r.course?` ｜ ${r.course}`:"")+(r.distance?` ${r.distance}`:"");
+
+  // 妙味の穴馬：AI4位以下 & 妙味プラス最大 & オカルト下支え
+  let anaIdx=-1, anaBest=0;
+  horses.forEach((h,i)=>{ if(i>=3 && h.edge>anaBest){ anaBest=h.edge; anaIdx=i; } });
+
+  const body=document.getElementById("resultBody"); body.innerHTML="";
+  const maxWin=Math.max(...horses.map(h=>h.plWin));
+  horses.forEach((h,i)=>{
+    let mk= i<MARKS.length?MARKS[i]:null;
+    if(i===anaIdx){ mk={s:"☆",c:"m-ana",t:"穴"}; }
+    const edgeTxt = h.edge>0? `+${h.edge}` : `${h.edge}`;
+    const tr=document.createElement("tr"); tr.className="horse";
+    tr.onclick=()=>toggleDetail(i);
+    tr.innerHTML=`
+      <td data-l="印"><span class="mark ${mk?mk.c:''}" title="${mk?mk.t:''}">${mk?mk.s:''}</span></td>
+      <td data-l="馬番"><span class="uma" style="background:${h.det.waku.css};color:${h.det.waku.txt}">${h.num}</span></td>
+      <td class="nm" data-l="馬名">${escapeHtml(h.name)}<div class="small">${h.sexAge||""} ${h.jockey||""}</div></td>
+      <td data-l="1着確率(AI)"><div class="bar"><i style="width:${(h.plWin/maxWin*100).toFixed(0)}%"></i></div>
+          <span class="scoretxt">${(h.plWin*100).toFixed(1)}%</span></td>
+      <td class="small" data-l="実力" style="color:var(--kin)">${h.fund.toFixed(0)}</td>
+      <td class="small" data-l="市場" style="color:var(--mkt)">${h.mkt.toFixed(0)}</td>
+      <td class="small" data-l="占い" style="color:var(--occ)">${h.occ.toFixed(0)}</td>
+      <td data-l="妙味"><span class="edge ${h.edge>0?'plus':'minus'}">${edgeTxt}</span></td>
+      <td class="small" data-l="ひとこと" style="text-align:left">${escapeHtml(oneLine(h.det))}${finalTags(h)}</td>`;
+    body.appendChild(tr);
+    const dr=document.createElement("tr"); dr.className="detail hidden"; dr.id="det"+i;
+    dr.innerHTML=`<td colspan="9">${detailHtml(h,ctx)}</td>`;
+    body.appendChild(dr);
+  });
+
+  document.getElementById("resultCard").classList.remove("hidden");
+  renderTrifecta(horses, anaIdx);
+}
+
+function detailHtml(h, ctx){
+  const d=h.det;
+  const etoTxt = d.eto? `${d.eto.kan}${d.eto.shi}（${d.eto.name}・${d.eto.gogyo}）×日の支[${ctx.dayShiGogyo}] → 相性${d.etoScore}`
+                      : "生まれ年不明のため省略";
+  return `<div class="fgrid">
+    <div class="fbox"><div class="t">🧭 枠の風水（五行・方位）</div><div class="v">
+      <span class="swatch" style="background:${d.waku.css}"></span>${d.waku.name}枠＝${d.waku.gogyo}・${d.waku.dir}
+      <div class="small">本日の気[${ctx.dayGogyo}]との相性：<b>${d.fengScore}</b></div></div></div>
+    <div class="fbox"><div class="t">🔤 馬名の画数</div><div class="v">
+      総画 ${d.kaku.total} → ${d.kaku.reduced}（${d.kaku.label}）
+      <div class="small">運勢点：<b>${d.kaku.score}</b></div></div></div>
+    <div class="fbox"><div class="t">🗣 言霊（頭文字）</div><div class="v">
+      「${d.koto.head}」＝母音[${d.koto.vowel}]→${d.koto.gogyo}
+      <div class="small">本日の気との響き：<b>${d.koto.score}</b></div></div></div>
+    <div class="fbox"><div class="t">🐉 干支</div><div class="v">${etoTxt}</div></div>
+    <div class="fbox"><div class="t">${d.seiza.emo} 星座（馬番見立て）</div><div class="v">
+      ${d.seiza.n}
+      <div class="small">今日の${d.seiza.n}運：<b>${d.seizaScore}</b></div></div></div>
+    <div class="fbox"><div class="t">🃏 タロット</div><div class="v tarot">
+      <span class="${d.tarot.reversed?'rev':'up'}">${d.tarot.name}${d.tarot.reversed?'（逆位置）':'（正位置）'}</span>
+      <div class="small">カード点：<b>${d.tarot.score}</b></div></div></div>
+    <div class="fbox"><div class="t">🎨 ラッキーカラー一致</div><div class="v">
+      本日の吉色：<span class="swatch" style="background:${ctx.luckColor.css}"></span>${ctx.luckColor.n}（吉方位：${ctx.luckDir}）
+      <div class="small">${d.colorMatch>=100?"枠色が一致！大吉":"一致せず（標準）"}</div></div></div>
+    ${d.tenkoScore!=null?`<div class="fbox"><div class="t">${WEATHER_INFO[ctx.weather].emoji} 天候の五行（現地反映）</div><div class="v">
+      本日の天気：${ctx.weather}＝${ctx.weatherGogyo} × 枠[${d.waku.gogyo}]
+      <div class="small">天候との相性：<b>${d.tenkoScore}</b>${ctx.track!=="良"?` ／ 馬場：<b>${ctx.track}</b>`:""}</div></div></div>`:""}
+    <div class="fbox"><div class="t">📊 3軸スコア内訳</div><div class="v">
+      <span style="color:var(--kin)">実力 ${h.fund.toFixed(0)}</span> ／
+      <span style="color:var(--mkt)">市場 ${h.mkt.toFixed(0)}</span> ／
+      <span style="color:var(--occ)">占い ${h.occ.toFixed(0)}</span>
+      <div class="small">合成 ${h.combined.toFixed(1)} → 1着確率 <b>${(h.plWin*100).toFixed(1)}%</b></div></div></div>
+  </div>`;
+}
+
+function toggleDetail(i){ document.getElementById("det"+i).classList.toggle("hidden"); }
+
+/* ============================================================
+   3連単 生成
+   ============================================================ */
+function trifectaCount(c1,c2,c3){
+  let n=0;
+  for(const a of c1) for(const b of c2) for(const c of c3){
+    if(a!==b && b!==c && a!==c) n++;
+  }
+  return n;
+}
+
+function renderTrifecta(horses, anaIdx){
+  // horses は強さ降順。馬番配列・強さ配列を index 一致で用意
+  const nums=horses.map(h=>h.num);
+  const str=horses.map(h=>h.str);
+  const S=str.reduce((a,b)=>a+b,0);
+  const numToHorse={}; horses.forEach(h=> numToHorse[h.num]=h);
+  const ana = anaIdx>=0? horses[anaIdx].num : null;
+  const target=TRIF_POINTS;
+  const arena=RACE._arena;
+
+  const umChip=(num)=>{ const h=numToHorse[num]; const w=h?WAKU[h.waku]:{css:"#888",txt:"#000"};
+    return `<span class="umn" style="background:${w.css};color:${w.txt}">${num}</span>`; };
+
+  /* ---- 🧠 AI本線：Plackett-Luce 確率上位 target 点 ---- */
+  const combos=[];
+  for(let i=0;i<horses.length;i++)
+    for(let j=0;j<horses.length;j++){ if(j===i) continue;
+      for(let k=0;k<horses.length;k++){ if(k===i||k===j) continue;
+        combos.push({i,j,k, p:plProb(i,j,k,str,S)});
+      }}
+  combos.sort((a,b)=> b.p-a.p);
+  const picked=combos.slice(0, Math.min(target, combos.length));
+  const coverP=picked.reduce((a,c)=>a+c.p,0);   // 的中期待率
+  let aiRows="";
+  for(let n=0;n<picked.length;n++){
+    const c=picked[n];
+    const pay=Math.round(1/Math.max(c.p,1e-9));      // 理論配当（フェア）＝1/確率
+    aiRows+=`<div class="combo"><span class="rk">${n+1}</span>
+      ${umChip(nums[c.i])}<span class="arw">→</span>${umChip(nums[c.j])}<span class="arw">→</span>${umChip(nums[c.k])}
+      <span class="pp">${(c.p*100).toFixed(1)}%</span>
+      <span class="pay">理論${pay.toLocaleString()}倍</span></div>`;
+  }
+  const aiCard=`
+    <div class="tc ai">
+      <div class="ttl">🧠 AI本線：確率上位 ${picked.length}点（Plackett-Luce）</div>
+      <div class="combolist">${aiRows}</div>
+      <div class="pts">的中期待 ${(coverP*100).toFixed(1)}% <span class="small" style="color:var(--sub);font-weight:600;">／ 全${picked.length}点</span></div>
+      <div class="ds">AIが確率の高い順に ${picked.length} 通りを厳選（全点表示）。各点の「理論配当」を超える三連単オッズが付いていれば期待値プラス。市場と見比べて取捨選択を。</div>
+    </div>`;
+
+  /* ---- 🎯 軸フォーメーション（買いやすさ重視） ---- */
+  const c1=nums.slice(0,Math.min(2,nums.length));
+  const c2=nums.slice(0,Math.min(4,nums.length));
+  let c3=[...c1]; if(ana!=null && !c3.includes(ana)) c3.push(ana);
+  for(const x of nums){
+    if(c3.includes(x)) continue;
+    const t=[...c3,x];
+    if(trifectaCount(c1,c2,t)<=target) c3=t;
+  }
+  c3.sort((a,b)=>a-b);
+  const fCount=trifectaCount(c1,c2,c3);
+  const formationCard=`
+    <div class="tc formation">
+      <div class="ttl">🎯 軸フォーメーション（買いやすさ重視）</div>
+      <div class="colrow"><span class="lb">1着</span>${c1.map(umChip).join("")}</div>
+      <div class="colrow"><span class="lb">2着</span>${c2.map(umChip).join("")}</div>
+      <div class="colrow"><span class="lb">3着</span>${c3.map(umChip).join("")}</div>
+      <div class="pts">${fCount}点 <span class="small" style="color:var(--sub);font-weight:600;">／ 指定${target}点</span></div>
+      <div class="ds">本命 ${c1[0]}番${c1[1]!=null?"・対抗 "+c1[1]+"番":""}を1・2着の軸に、3着を${c3.length}頭へ広げる手堅い型。${ana!=null?`妙味の穴 ${ana}番も3着で確保。`:""}窓口で買いやすい構成。</div>
+    </div>`;
+
+  /* ---- 🌊 荒れボックス（高配当・一発） ---- */
+  let boxN=3;
+  while((boxN+1)*boxN*(boxN-1)<=target && boxN+1<=nums.length) boxN++;
+  boxN=Math.min(boxN,nums.length);
+  let boxPool=nums.slice(0,boxN);
+  if(ana!=null && !boxPool.includes(ana) && boxN>=3){ boxPool=[...nums.slice(0,boxN-1),ana]; }
+  boxPool.sort((a,b)=>a-b);
+  const boxCount=boxN*(boxN-1)*(boxN-2);
+  const boxCard=`
+    <div class="tc box">
+      <div class="ttl">🌊 荒れボックス（高配当・一発）</div>
+      <div class="colrow"><span class="lb">${boxN}頭</span>${boxPool.map(umChip).join("")}</div>
+      <div class="pts">${boxCount}点 <span class="small" style="color:var(--sub);font-weight:600;">／ 指定${target}点</span></div>
+      <div class="ds">${ana!=null?`妙味の穴 ${ana}番を含む`:"上位"}${boxN}頭ボックス。着順不問で一発逆転狙い。トリガミ（的中してもマイナス）に注意。</div>
+    </div>`;
+
+  document.getElementById("arenaBadge").textContent=`荒れ指数 ${arena.score}／${arena.label}`;
+  const condBadge=document.getElementById("condBadge");
+  if(WEATHER || TRACK!=="良"){
+    condBadge.style.display="";
+    condBadge.textContent=`${WEATHER?WEATHER_INFO[WEATHER].emoji+WEATHER+" ":""}馬場${TRACK}`;
+  } else condBadge.style.display="none";
+  document.getElementById("trifBox").innerHTML=`<div class="trif">${aiCard}${formationCard}${boxCard}</div>`;
+  document.getElementById("trifCard").classList.remove("hidden");
+}
+
+/* ============================================================
+   UI ハンドラ
+   ============================================================ */
+function onAxes(){
+  W_KIN=Number(document.getElementById("sKin").value)/100;
+  W_MKT=Number(document.getElementById("sMkt").value)/100;
+  W_OCC=Number(document.getElementById("sOcc").value)/100;
+  updateAxPct();
+  recompute();
+}
+function setAxes(k,m,o){
+  document.getElementById("sKin").value=k;
+  document.getElementById("sMkt").value=m;
+  document.getElementById("sOcc").value=o;
+  onAxes();
+}
+function updateAxPct(){
+  const k=Number(document.getElementById("sKin").value);
+  const m=Number(document.getElementById("sMkt").value);
+  const o=Number(document.getElementById("sOcc").value);
+  const sum=(k+m+o)||1;
+  document.getElementById("pKin").textContent=Math.round(k/sum*100)+"%";
+  document.getElementById("pMkt").textContent=Math.round(m/sum*100)+"%";
+  document.getElementById("pOcc").textContent=Math.round(o/sum*100)+"%";
+}
+function renderPtChips(){
+  const box=document.getElementById("ptChips"); box.innerHTML="";
+  TRIF_PRESETS.forEach(p=>{
+    const s=document.createElement("span");
+    s.className="ptchip"+(p===TRIF_POINTS?" on":"");
+    s.textContent=p; s.onclick=()=>setPts(p);
+    box.appendChild(s);
+  });
+}
+function setPts(p){
+  TRIF_POINTS=p;
+  document.getElementById("trifPts").value=p;
+  renderPtChips();
+  if(RACE) recompute();
+}
+function onPtsInput(){
+  let v=parseInt(document.getElementById("trifPts").value,10);
+  if(!v||v<3) v=3; if(v>300) v=300;
+  TRIF_POINTS=v;
+  renderPtChips();
+  if(RACE) recompute();
+}
+
+/* ---- 天気・馬場 セレクタ ---- */
+function renderWxChips(){
+  const wb=document.getElementById("wxChips"); wb.innerHTML="";
+  WEATHER_OPTS.forEach(w=>{
+    const s=document.createElement("span");
+    s.className="ptchip"+(w===WEATHER?" on":"");
+    s.textContent=WEATHER_INFO[w].emoji+w;
+    s.onclick=()=>setWeather(w===WEATHER?"":w);   // 再クリックで未指定に戻す
+    wb.appendChild(s);
+  });
+  const tb=document.getElementById("trkChips"); tb.innerHTML="";
+  TRACK_OPTS.forEach(t=>{
+    const s=document.createElement("span");
+    s.className="ptchip"+(t===TRACK?" on":"");
+    s.textContent=t;
+    s.onclick=()=>setTrack(t);
+    tb.appendChild(s);
+  });
+}
+function setWeather(w){ WEATHER=w; renderWxChips(); if(RACE) recompute(); }
+function setTrack(t){ TRACK=t; renderWxChips(); if(RACE) recompute(); }
+
+/* WMO天気コード→晴/曇/雨、降水量→馬場の目安（推測） */
+function wmoToWeather(code){
+  if(code<=1) return "晴";          // 0快晴 1晴れ
+  if(code<=48) return "曇";          // 2-3曇 45-48霧
+  return "雨";                       // 51+ 霧雨/雨/雪/雷雨
+}
+function precipToTrack(mm){
+  if(mm>=15) return "不良";
+  if(mm>=7)  return "重";
+  if(mm>=1)  return "稍重";
+  return "良";
+}
+/* Open-Meteo（APIキー不要・CORS可）で高知競馬場の天気を取得。オフライン時は手動選択にフォールバック。 */
+async function fetchWeather(){
+  const hint=document.getElementById("wxHint");
+  const btn=document.getElementById("wxBtn");
+  const dateStr=document.getElementById("raceDate").value || todayStr();
+  const LAT=33.5589, LON=133.5786;   // 高知競馬場（高知市長浜）付近
+  btn.disabled=true; hint.style.color=""; hint.textContent="☁ 高知の天気を取得中…";
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}`+
+      `&daily=weather_code,precipitation_sum,temperature_2m_max&current=weather_code,temperature_2m,precipitation`+
+      `&timezone=Asia%2FTokyo&start_date=${dateStr}&end_date=${dateStr}`;
+    const r=await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const j=await r.json();
+    let code, precip, temp, src;
+    if(j.daily && j.daily.weather_code && j.daily.weather_code.length){
+      code=j.daily.weather_code[0];
+      precip=j.daily.precipitation_sum? j.daily.precipitation_sum[0] : 0;
+      temp=j.daily.temperature_2m_max? j.daily.temperature_2m_max[0] : null;
+      src="予報";
+    }else if(j.current){
+      code=j.current.weather_code; precip=j.current.precipitation||0; temp=j.current.temperature_2m; src="現在";
+    }else throw new Error("データなし");
+    WEATHER=wmoToWeather(code);
+    TRACK=precipToTrack(precip);
+    renderWxChips();
+    if(RACE) recompute();
+    hint.style.color="var(--good)";
+    hint.textContent=`✅ ${dateStr} 高知（${src}）：${WEATHER_INFO[WEATHER].emoji}${WEATHER}`+
+      `／降水${(precip||0).toFixed(1)}mm → 馬場想定「${TRACK}」`+(temp!=null?`／${Math.round(temp)}℃`:"")+
+      `　※馬場は降水量からの推測。実際の発表に合わせて手動調整可。`;
+  }catch(e){
+    hint.style.color="var(--warn)";
+    hint.textContent=`⚠ 自動取得に失敗（${e.message}）。オフラインの可能性。天気・馬場は手動で選んでください。`;
+  }finally{ btn.disabled=false; }
+}
+
+/* ============================================================
+   🎲 運試し（完全ランダム3連単）
+   ============================================================ */
+let LUCK_PICKS=[];
+const LUCK_LINES=[
+  "無心が呼ぶ、その一点。",
+  "理屈を超えた“引き”が来ている。",
+  "あの37万も、偶然じゃなく必然だったのかも。",
+  "考えるな、感じろ。手が勝手に選ぶ。",
+  "今日の天運、馬券に宿る。",
+  "ロジックが届かない場所に、大穴は咲く。",
+  "サイコロの神様が微笑んでいる。",
+  "余計な分析を捨てた者にこそ、女神は微笑む。"
+];
+function luckHeads(){
+  let n=parseInt(document.getElementById("luckHeads").value,10);
+  if(!n||n<3) n=3; if(n>18) n=18;
+  return n;
+}
+function genRandomTrifectas(heads,count){
+  const res=[];
+  for(let c=0;c<count;c++){
+    const pool=[]; for(let i=1;i<=heads;i++) pool.push(i);
+    for(let i=0;i<3;i++){ const j=i+Math.floor(Math.random()*(pool.length-i));
+      const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+    res.push([pool[0],pool[1],pool[2]]);
+  }
+  return res;
+}
+function luckChip(num){
+  let w={css:"#2a2350",txt:"#ece8ff"};
+  if(RACE){ const h=RACE.horses.find(x=>x.num===num); if(h) w=WAKU[h.waku]; }
+  return `<span class="umn" style="background:${w.css};color:${w.txt}">${num}</span>`;
+}
+function luckRowsHtml(picks, rolling){
+  return picks.map((p,i)=>`<div class="luckrow ${rolling?'rolling':'settled'}">
+     ${picks.length>1?`<span class="rk">${i+1}</span>`:''}
+     ${luckChip(p[0])}<span class="arw">→</span>${luckChip(p[1])}<span class="arw">→</span>${luckChip(p[2])}
+   </div>`).join("");
+}
+function rollLuck(){
+  const heads=luckHeads();
+  let count=parseInt(document.getElementById("luckCount").value,10)||1;
+  if(count<1)count=1; if(count>20)count=20;
+  document.getElementById("luckCount").value=count;
+  const box=document.getElementById("luckResult");
+  const btn=document.getElementById("luckBtn");
+  document.getElementById("luckFortune").textContent="";
+  document.getElementById("luckCopyBtn").style.display="none";
+  btn.disabled=true;
+  let ticks=0;
+  const anim=setInterval(()=>{
+    box.innerHTML=luckRowsHtml(genRandomTrifectas(heads,count), true);
+    if(++ticks>=12){
+      clearInterval(anim);
+      const picks=genRandomTrifectas(heads,count);
+      LUCK_PICKS=picks;
+      box.innerHTML=luckRowsHtml(picks, false);
+      btn.disabled=false;
+      document.getElementById("luckCopyBtn").style.display="";
+      const line=LUCK_LINES[Math.floor(Math.random()*LUCK_LINES.length)];
+      const f=dayFortune(document.getElementById("raceDate").value||todayStr());
+      document.getElementById("luckFortune").innerHTML=
+        `🔮 ${line}　／　本日の吉色 <span class="swatch" style="background:${f.color.css}"></span>${f.color.n}・吉方位 ${f.dir}`;
+      toast("🎲 運命の3連単を引き寄せた！");
+    }
+  },55);
+}
+function copyLuck(){
+  if(!LUCK_PICKS.length) return;
+  const txt=LUCK_PICKS.map(p=>`${p[0]}→${p[1]}→${p[2]}`).join("\n");
+  navigator.clipboard.writeText(txt)
+    .then(()=>toast("買い目をコピーしました")).catch(()=>toast("コピーに失敗しました"));
+}
+
+/* ============================================================
+   入出力
+   ============================================================ */
+/* AI返答が前後に説明文・コードフェンスを含んでいても、出馬表JSONだけ拾う */
+function parseLenient(raw){
+  let s=String(raw).trim().replace(/```json/gi,"```").replace(/```/g,"").trim();
+  try{ return JSON.parse(s); }catch(e){}
+  // 最も外側の { … } を抽出（"horses" を含む塊を優先）
+  const first=s.indexOf("{"), last=s.lastIndexOf("}");
+  if(first>=0 && last>first){
+    const slice=s.slice(first,last+1);
+    try{ return JSON.parse(slice); }catch(e){}
+  }
+  throw new Error("有効なJSONオブジェクトが見つかりませんでした");
+}
+
+function loadData(){
+  const raw=document.getElementById("jsonInput").value.trim();
+  const err=document.getElementById("errBox"); err.textContent="";
+  if(!raw){ err.textContent="JSONを貼り付けてください。"; return; }
+  let data;
+  try{ data=parseLenient(raw); }
+  catch(e){ err.textContent="JSONの解析に失敗しました：\n"+e.message+"\n（出馬表のJSON部分が含まれているかご確認ください）"; return; }
+  const horses=(data.horses||data.umas||[]);
+  if(!Array.isArray(horses)||!horses.length){ err.textContent="horses 配列が見つかりません。形式をご確認ください。"; return; }
+  const dateStr=(data.race&&data.race.date)|| document.getElementById("raceDate").value || todayStr();
+  document.getElementById("raceDate").value=dateStr;
+  const raceYear=parseInt(dateStr.slice(0,4),10);
+  const total=horses.length;
+  RACE={ race:data.race||{}, horses: horses.map(h=>{
+    const num=Number(h.num||h.umaban||h.number||0);
+    const waku=Number(h.waku||h.waku_no||0)|| wakuFromNum(num,total);
+    return {
+      num, waku:Math.min(8,Math.max(1,waku)),
+      name:String(h.name||h.umamei||"（無名）"),
+      sexAge:h.sexAge||h.seirei||"",
+      jockey:h.jockey||h.kishu||"",
+      weight:h.weight||h.kinryo||null,
+      odds:Number(h.odds||0)||null,
+      pop:Number(h.pop||h.ninki||0)||null,
+      recent:Array.isArray(h.recent)?h.recent.map(Number): (Array.isArray(h.kinso)?h.kinso.map(Number):null),
+      birthYear: birthYearFromSexAge(h.sexAge||h.seirei, raceYear)
+    };
+  })};
+  document.getElementById("luckHeads").value=RACE.horses.length;  // 運試しの頭数も同期
+  recompute();
+  toast("生成完了！3連単の買い目を表示しました 🔥");
+  document.getElementById("resultCard").scrollIntoView({behavior:"smooth"});
+}
+
+function clearAll(){
+  document.getElementById("jsonInput").value="";
+  document.getElementById("errBox").textContent="";
+  RACE=null;
+  document.getElementById("resultCard").classList.add("hidden");
+  document.getElementById("trifCard").classList.add("hidden");
+}
+
+function loadSample(){
+  document.getElementById("jsonInput").value=JSON.stringify(SAMPLE,null,2);
+  loadData();
+}
+
+/* ---- ユーティリティ ---- */
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200);
+}
+function copyPrompt(){
+  navigator.clipboard.writeText(document.getElementById("aiPrompt").textContent)
+    .then(()=>toast("プロンプトをコピーしました")).catch(()=>toast("コピーに失敗しました"));
+}
+
+/* ---- AI用プロンプト ---- */
+const AI_PROMPT=`添付した高知競馬ファイナルレースの出馬表スクショを読み取り、下記JSON形式【のみ】を出力してください（説明文不要）。
+読み取れない項目は省略可。馬名はカタカナ、recent は近走着順を新しい順で。
+
+{
+  "race": { "name": "一発逆転ファイナルレース", "date": "YYYY-MM-DD", "course": "高知", "distance": "ダ1300m" },
+  "horses": [
+    {
+      "num": 1, "waku": 1, "name": "サンプルホース",
+      "sexAge": "牡4", "jockey": "騎手名", "weight": 57,
+      "odds": 3.2, "pop": 1, "recent": [9, 5, 11, 6]
+    }
+  ]
+}`;
+
+/* ---- サンプルデータ（高知ファイナル想定：巧者騎手入り） ---- */
+const SAMPLE={
+  race:{name:"一発逆転ファイナルレース（記者選抜）", date: todayStr(), course:"高知", distance:"ダ1300m"},
+  horses:[
+    {num:1,name:"ゴールデンミラクル",sexAge:"牡5",jockey:"赤岡修次",odds:4.5,pop:2,recent:[5,2,8,4]},
+    {num:2,name:"ヨミガエルヒカリ",sexAge:"牝4",jockey:"宮川実",odds:3.1,pop:1,recent:[4,3,6]},
+    {num:3,name:"アンラッキーボーイ",sexAge:"牡6",jockey:"濱尚美",odds:18.0,pop:7,recent:[9,5,11,6]},
+    {num:4,name:"ツキノウサギ",sexAge:"牝5",jockey:"多田羅誠也",odds:6.8,pop:3,recent:[2,8,7,5]},
+    {num:5,name:"ホシヨミノカゼ",sexAge:"牡4",jockey:"上田将司",odds:9.2,pop:4,recent:[3,4,10,7]},
+    {num:6,name:"シックスセンス",sexAge:"牡4",jockey:"塚本雄大",odds:12.5,pop:5,recent:[5,2,6]},
+    {num:7,name:"オカルトクイーン",sexAge:"牝6",jockey:"妹尾浩一朗",odds:31.0,pop:9,recent:[10,7,4,9]},
+    {num:8,name:"タロットエース",sexAge:"牡5",jockey:"井上瑛太",odds:15.0,pop:6,recent:[4,6,9,2]},
+    {num:9,name:"フウスイマスター",sexAge:"牡7",jockey:"佐原秀泰",odds:22.0,pop:8,recent:[7,9,5]},
+    {num:10,name:"ラストデスティニー",sexAge:"牝4",jockey:"永森大智",odds:48.0,pop:10,recent:[12,8,10,11]}
+  ]
+};
+
+/* ---- 初期化 ---- */
+document.getElementById("aiPrompt").textContent=AI_PROMPT;
+document.getElementById("raceDate").value=todayStr();
+updateAxPct();
+renderPtChips();
+renderWxChips();
+</script>
+</body>
+</html>
