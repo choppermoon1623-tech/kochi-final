@@ -1066,6 +1066,50 @@ function parseLenient(raw){
   throw new Error("有効なJSONオブジェクトが見つかりませんでした");
 }
 
+/* キー名のゆらぎ吸収：英/日・スネークケース・大小無視で値を取る */
+function normKey(s){ return String(s).toLowerCase().replace(/[_\s\-]/g,""); }
+function getField(obj, aliases){
+  if(!obj||typeof obj!=="object") return undefined;
+  const map={}; for(const k in obj) map[normKey(k)]=obj[k];
+  for(const a of aliases){ const v=map[normKey(a)]; if(v!==undefined && v!==null && v!=="") return v; }
+  return undefined;
+}
+/* 馬っぽいオブジェクト（名前か馬番らしきキーを持つ） */
+function looksLikeHorse(x){
+  if(!x||typeof x!=="object"||Array.isArray(x)) return false;
+  const ks=Object.keys(x).map(normKey);
+  const hasName=ks.some(k=>/name|umamei|馬名|uma$|^uma|horse/.test(k));
+  const hasNum =ks.some(k=>/num|umaban|number|^no$|馬番|frame|waku|枠|odds|オッズ|人気|ninki|pop/.test(k));
+  return hasName||hasNum;
+}
+/* 出走馬の配列を、キー名に関わらず探し出す */
+function findHorsesArray(data){
+  const aliases=["horses","umas","runners","entries","horselist","list","data","出走馬","馬","出走表","starters","field"];
+  for(const a of aliases){ const v=getField(data,[a]); if(Array.isArray(v)&&v.length&&looksLikeHorse(v[0])) return v; }
+  // 再帰探索：馬っぽいオブジェクトを要素に持つ最初の配列
+  let found=null;
+  (function walk(o){
+    if(found||!o||typeof o!=="object") return;
+    if(Array.isArray(o)){
+      if(o.length && looksLikeHorse(o[0])){ found=o; return; }
+      for(const e of o){ walk(e); if(found) return; }
+      return;
+    }
+    for(const k in o){ walk(o[k]); if(found) return; }
+  })(data);
+  return found;
+}
+/* recent（近走着順）を配列/文字列/オブジェクト配列いずれからでも数値配列に */
+function toRecent(v){
+  if(v==null) return null;
+  let arr;
+  if(Array.isArray(v)) arr=v.map(x=> (x&&typeof x==="object")? Number(x.finish||x.position||x.order||x.rank||x.着順||x.result||0) : Number(x));
+  else if(typeof v==="string") arr=v.split(/[^0-9]+/).filter(Boolean).map(Number);
+  else return null;
+  arr=arr.filter(n=>Number.isFinite(n)&&n>0);
+  return arr.length? arr : null;
+}
+
 function loadData(){
   const raw=document.getElementById("jsonInput").value.trim();
   const err=document.getElementById("errBox"); err.textContent="";
@@ -1073,25 +1117,31 @@ function loadData(){
   let data;
   try{ data=parseLenient(raw); }
   catch(e){ err.textContent="JSONの解析に失敗しました：\n"+e.message+"\n（出馬表のJSON部分が含まれているかご確認ください）"; return; }
-  const horses=(data.horses||data.umas||[]);
-  if(!Array.isArray(horses)||!horses.length){ err.textContent="horses 配列が見つかりません。形式をご確認ください。"; return; }
-  const dateStr=(data.race&&data.race.date)|| document.getElementById("raceDate").value || todayStr();
+  const horses=findHorsesArray(data);
+  if(!Array.isArray(horses)||!horses.length){
+    err.textContent="出馬表（馬の配列）が見つかりませんでした。\n検出した最上位キー：["+Object.keys(data).join(", ")+"]\nAIに「horses 配列を持つJSONで」と頼むか、このJSONをそのまま開発者に共有してください。";
+    return;
+  }
+  const race=data.race||data.レース||data.raceInfo||{};
+  const dateStr=getField(race,["date","日付","racedate"]) || getField(data,["date","日付"]) ||
+                document.getElementById("raceDate").value || todayStr();
   document.getElementById("raceDate").value=dateStr;
-  const raceYear=parseInt(dateStr.slice(0,4),10);
+  const raceYear=parseInt(String(dateStr).slice(0,4),10);
   const total=horses.length;
-  RACE={ race:data.race||{}, horses: horses.map(h=>{
-    const num=Number(h.num||h.umaban||h.number||0);
-    const waku=Number(h.waku||h.waku_no||0)|| wakuFromNum(num,total);
+  RACE={ race, horses: horses.map((h,i)=>{
+    const num=Number(getField(h,["num","umaban","horsenumber","number","no","馬番","horseno"]))|| (i+1);
+    const waku=Number(getField(h,["waku","wakuno","frame","framenumber","bracket","枠番","枠","frameno"]))|| wakuFromNum(num,total);
+    const sexAge=getField(h,["sexage","seirei","性齢","sexandage"])||"";
     return {
-      num, waku:Math.min(8,Math.max(1,waku)),
-      name:String(h.name||h.umamei||"（無名）"),
-      sexAge:h.sexAge||h.seirei||"",
-      jockey:h.jockey||h.kishu||"",
-      weight:h.weight||h.kinryo||null,
-      odds:Number(h.odds||0)||null,
-      pop:Number(h.pop||h.ninki||0)||null,
-      recent:Array.isArray(h.recent)?h.recent.map(Number): (Array.isArray(h.kinso)?h.kinso.map(Number):null),
-      birthYear: birthYearFromSexAge(h.sexAge||h.seirei, raceYear)
+      num, waku:Math.min(8,Math.max(1,waku||1)),
+      name:String(getField(h,["name","horsename","umamei","馬名"])||"（無名）"),
+      sexAge,
+      jockey:getField(h,["jockey","kishu","騎手","鞍上","jockeyname"])||"",
+      weight:getField(h,["weight","kinryo","斤量","impost","carriedweight","負担重量"])||null,
+      odds:Number(getField(h,["odds","winodds","oddswin","単勝","単勝オッズ","tansho"]))||null,
+      pop:Number(getField(h,["pop","popularity","ninki","人気","人気順"]))||null,
+      recent:toRecent(getField(h,["recent","recentfinishes","recentresults","kinso","近走","近5走","last5","着順","results","着順履歴"])),
+      birthYear: birthYearFromSexAge(sexAge, raceYear)
     };
   })};
   document.getElementById("luckHeads").value=RACE.horses.length;  // 運試しの頭数も同期
